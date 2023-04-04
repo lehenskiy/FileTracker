@@ -26,6 +26,8 @@
 2) Привязываем к истечению таймера формированию списка путей к отслеживанию файлов(`ListFormer`) и получение сводки по ним(класс `FileStatesTracker`);
 3) Каждые 5 секунд(время истечения таймера) неявно вызываются методы `ListFormer->formFromFile` и `FileStatesTracker->trackFromList`, притом на сформированные `FileStatesTracker` сигналы неявно вызываются методы `FileStatesConsoleNotifier`, выводящие сводку о файлах в консоль.  
 
+![timelineUml1](https://user-images.githubusercontent.com/50871152/229860081-ffab3f66-6dea-4b76-87cf-e575d5dda166.png)
+
 ## Реализация паттернов
 В данном случае речь пойдет об антипаттерне *singleton*. Шаблон проектирования был реализован классом `FileStatesConsoleNotifier`:
 1) Скрываем конструктор(делаем его `private`);
