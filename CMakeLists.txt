@@ -12,7 +12,7 @@ find_package(Qt6 COMPONENTS
         Core
         REQUIRED)
 
-add_executable(FileTracker main.cpp FileStatesTracker.cpp FileStatesTracker.h FileStatesConsoleNotifier.cpp FileStatesConsoleNotifier.h ListFormer.cpp ListFormer.h)
+add_executable(FileTracker main.cpp FileStatesTracker.cpp FileStatesTracker.h FileStatesConsoleNotifier.cpp FileStatesConsoleNotifier.h FilesCollection.cpp FilesCollection.h)
 target_link_libraries(FileTracker
         Qt::Core
         )
