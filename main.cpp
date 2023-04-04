@@ -1,7 +1,7 @@
 #include <QCoreApplication>
 #include "FileStatesTracker.h"
 #include "FileStatesConsoleNotifier.h"
-#include "ListFormer.h"
+#include "FilesCollection.h"
 #include <QTimer>
 
 int main(int argc, char *argv[])
@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
 
     FileStatesTracker tracker = new FileStatesTracker();
     FileStatesConsoleNotifier *notifier = FileStatesConsoleNotifier::getInstance();
+    FilesCollection filesCollection;
 
     QObject::connect(&tracker,
                      &FileStatesTracker::fileExists,
@@ -30,11 +31,21 @@ int main(int argc, char *argv[])
 
     QTimer timer;
     timer.setInterval(5000);
-    QObject::connect(&timer, &QTimer::timeout, &tracker, [&tracker] {
-        QList<QString> fileListToTrack = ListFormer::formFromFile(R"(../filesList.txt)");
+    QObject::connect(&timer, &QTimer::timeout, &tracker, [&tracker, filesCollection] {
+        filesCollection.addFromFile(R"(../filesList.txt)");
+        filesCollection.add(R"(../filesList.txt)");
+        filesCollection.remove(R"(C:\Example\Path\To\file.txt)");
+        QList<QString> fileListToTrack = filesCollection.getCollection();
+
         tracker.trackFromList(fileListToTrack);
     });
     timer.start();
 
-    return QCoreApplication::exec();
+    int result = QCoreApplication::exec();
+
+    delete &tracker;
+    delete notifier;
+    delete &filesCollection;
+
+    return result;
 }
