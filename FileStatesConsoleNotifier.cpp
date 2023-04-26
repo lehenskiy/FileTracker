@@ -2,17 +2,6 @@
 #include <iostream>
 using namespace std;
 
-FileStatesConsoleNotifier *FileStatesConsoleNotifier::instance = nullptr;
-
-FileStatesConsoleNotifier *FileStatesConsoleNotifier::getInstance()
-{
-    if (instance == nullptr) {
-        return instance = new FileStatesConsoleNotifier();
-    }
-
-    return instance;
-}
-
 void FileStatesConsoleNotifier::fileNotExistsNotify(const QString &pathfile)
 {
     cout << "File with the specified path " << pathfile.toStdString() << " does not exist" << endl;

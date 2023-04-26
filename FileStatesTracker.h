@@ -3,14 +3,15 @@
 
 #include <QObject>
 #include <QMap>
+#include <QDateTime>
 
 class FileStatesTracker: public QObject
 {
 Q_OBJECT
 
 public:
-    FileStatesTracker(QObject *parent = nullptr);
     ~FileStatesTracker();
+    static FileStatesTracker *getInstance();
 
 public slots:
     void getFromPath(const QString &path);
@@ -24,6 +25,8 @@ signals:
 
 private:
     QMap<QString, QDateTime> previousModification;
+    FileStatesTracker() {};
+    static FileStatesTracker *instance;
 };
 
 
