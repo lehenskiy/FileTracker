@@ -1,13 +1,22 @@
 #include "FileStatesTracker.h"
 #include <QFileInfo>
 
-FileStatesTracker::FileStatesTracker(QObject *parent)
-    : QObject(parent)
-{
+FileStatesTracker* FileStatesTracker::instance = nullptr;
 
+FileStatesTracker::~FileStatesTracker()
+{
+    delete instance;
+    instance = nullptr;
 }
 
-FileStatesTracker::~FileStatesTracker() = default;
+FileStatesTracker* FileStatesTracker::getInstance()
+{
+    if (instance == nullptr) {
+        instance = new FileStatesTracker();
+    }
+
+    return instance;
+}
 
 void FileStatesTracker::getFromPath(const QString &path)
 {
