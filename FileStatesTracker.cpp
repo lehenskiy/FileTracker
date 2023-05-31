@@ -1,5 +1,6 @@
 #include "FileStatesTracker.h"
 #include <QFileInfo>
+#include <QDateTime>
 
 FileStatesTracker* FileStatesTracker::instance = nullptr;
 
