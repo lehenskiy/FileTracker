@@ -1,33 +1,39 @@
-#ifndef FILETRACKER_FILESTATESTRACKER_H
-#define FILETRACKER_FILESTATESTRACKER_H
-
+#pragma once
 #include <QObject>
-#include <QMap>
+#include <QFile>
+#include <QFileInfo>
 #include <QDateTime>
+#include <QList>
+#include <QMap>
 
-class FileStatesTracker: public QObject
+class FileStatesTracker : public QObject
 {
-Q_OBJECT
+ Q_OBJECT
 
-public:
-    ~FileStatesTracker();
-    static FileStatesTracker *getInstance();
+ public:
+	static FileStatesTracker* getInstance();
+	~FileStatesTracker();
+	void addFile(QString filePath);
+	void deleteFile(QString filename);
 
-public slots:
-    void getFromPath(const QString &path);
-    void trackFromList(const QList<QString> &files);
+ signals:
+	void fileCreated(std::string filePath, qint64 fileSize);
+	void fileDeleted(std::string filePath);
+	void fileModified(std::string filePath, qint64 fileSize);
+	void fileTracked(std::string filePath, qint64 fileSize, bool isExist);
+	void stopTracking(std::string filePath);
+	void fileNotTracked(std::string filePath);
+	void fileAlreadyTracked(std::string filePath);
+	void fileNotModified(std::string filePath);
+	void trackingEnded(int filesAmount);
 
-signals:
-    void fileExists(QString path, qint64 size);
-    void fileModified(QString path, qint64 size);
-    void fileNotExists(QString path);
-    void trackingEnded(qint64 filesAmount);
+ public slots:
+	void UpdateFileState();
 
-private:
-    QMap<QString, QDateTime> previousModification;
-    FileStatesTracker() {};
-    static FileStatesTracker *instance;
+ private:
+	FileStatesTracker(QObject* parent = nullptr);
+	static FileStatesTracker* instance;
+	QList<QString> filesToTrack;
+	QMap<QString, QDateTime> previousModification;
+	QMap<QString, bool> isFileExist;
 };
-
-
-#endif //FILETRACKER_FILESTATESTRACKER_H
