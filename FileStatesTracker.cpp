@@ -1,45 +1,84 @@
 #include "FileStatesTracker.h"
-#include <QFileInfo>
-#include <QDateTime>
 
 FileStatesTracker* FileStatesTracker::instance = nullptr;
 
-FileStatesTracker::~FileStatesTracker()
-{
-    delete instance;
-    instance = nullptr;
-}
-
 FileStatesTracker* FileStatesTracker::getInstance()
 {
-    if (instance == nullptr) {
-        instance = new FileStatesTracker();
-    }
+	if (instance == nullptr)
+	{
+		return instance = new FileStatesTracker();
+	}
 
-    return instance;
+	return instance;
 }
 
-void FileStatesTracker::getFromPath(const QString &path)
+FileStatesTracker::~FileStatesTracker()
 {
-    QFileInfo fileInfo(path);
-    if (fileInfo.exists()) {
-        if (!previousModification.contains(path) || previousModification[path] == fileInfo.lastModified()) {
-            emit fileExists(path, fileInfo.size());
-        }
-        else {
-            emit fileModified(path, fileInfo.size());
-        }
-        previousModification[path] = fileInfo.lastModified();
-    }
-    else {
-        emit fileNotExists(path);
-    }
+	instance->deleteLater();
+	instance = nullptr;
 }
 
-void FileStatesTracker::trackFromList(const QList<QString> &files)
+FileStatesTracker::FileStatesTracker(QObject* parent) : QObject(parent)
 {
-    foreach(QString path, files) {
-        this->getFromPath(path);
-    }
-    emit trackingEnded(files.count());
+}
+
+void FileStatesTracker::addFile(QString filePath)
+{
+	if (filesToTrack.contains(filePath))
+	{
+		emit fileAlreadyTracked(filePath.toStdString());
+	}
+	else
+	{
+		filesToTrack.append(filePath);
+		QFileInfo fileInfo(filePath);
+		previousModification[fileInfo.filePath()] = fileInfo.lastModified();
+		isFileExist[fileInfo.filePath()] = fileInfo.exists();
+		emit fileTracked(fileInfo.filePath().toStdString(), fileInfo.size(), fileInfo.exists());
+	}
+}
+
+void FileStatesTracker::deleteFile(QString filePath)
+{
+	if (!filesToTrack.contains(filePath))
+	{
+		emit fileNotTracked(filePath.toStdString());
+	}
+	else
+	{
+		filesToTrack.removeOne(filePath);
+		previousModification.remove(filePath);
+		isFileExist.remove(filePath);
+		emit stopTracking(filePath.toStdString());
+	}
+}
+
+void FileStatesTracker::UpdateFileState()
+{
+	for (const QString& filePath : filesToTrack)
+	{
+		QFileInfo file(filePath);
+		if (file.exists() && !isFileExist[file.filePath()])
+		{
+			previousModification[file.filePath()] = file.lastModified();
+			isFileExist[file.filePath()] = true;
+			emit fileCreated(file.filePath().toStdString(), file.size());
+		}
+		else if (file.exists() && previousModification[file.filePath()] != file.lastModified())
+		{
+			previousModification[file.filePath()] = file.lastModified();
+			emit fileModified(file.filePath().toStdString(), file.size());
+		}
+		else if (!file.exists() && isFileExist[file.filePath()])
+		{
+			previousModification.remove(file.filePath());
+			isFileExist[file.filePath()] = false;
+			emit fileDeleted(file.filePath().toStdString());
+		}
+		else
+		{
+			emit fileNotModified(file.filePath().toStdString());
+		}
+	}
+	emit trackingEnded(filesToTrack.count());
 }

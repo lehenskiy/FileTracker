@@ -16,8 +16,6 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
 add_executable(FileTracker
   main.cpp
-  FilesCollection.cpp
-  FilesCollection.h
   FileStatesConsoleNotifier.cpp
   FileStatesConsoleNotifier.h
   FileStatesTracker.cpp

@@ -1,48 +1,74 @@
 #include <QCoreApplication>
-#include "FileStatesTracker.h"
-#include "FileStatesConsoleNotifier.h"
-#include "FilesCollection.h"
 #include <QTimer>
+#include "FileStatesConsoleNotifier.h"
+#include "FileStatesTracker.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-    QCoreApplication a(argc, argv);
+	QCoreApplication a(argc, argv);
 
-    FileStatesTracker* tracker = FileStatesTracker::getInstance();
-    FilesCollection filesCollection;
-    if (tracker == nullptr) {
-        QCoreApplication::exit();
-    }
+	FileStatesConsoleNotifier consoleNotifier;
 
-    QObject::connect(tracker,
-                     &FileStatesTracker::fileExists,
-                     &FileStatesConsoleNotifier::fileExistsNotify);
-    QObject::connect(tracker,
-                     &FileStatesTracker::fileNotExists,
-                     &FileStatesConsoleNotifier::fileNotExistsNotify);
-    QObject::connect(tracker,
-                     &FileStatesTracker::fileModified,
-                     &FileStatesConsoleNotifier::fileModifiedNotify);
-    QObject::connect(tracker,
-                     &FileStatesTracker::trackingEnded,
-                     &FileStatesConsoleNotifier::trackingEndedNotify);
+	FileStatesTracker* tracker = nullptr;
+	try {
+		tracker = FileStatesTracker::getInstance();
+	} catch (std::bad_alloc& exception) {
+		cout << "Cannot allocate memory: " << exception.what() << endl;
+	}
 
-    QTimer timer;
-    timer.setInterval(5000);
-    QObject::connect(&timer, &QTimer::timeout, tracker, [tracker, filesCollection] {
-        filesCollection.addFromFile(R"(../filesList.txt)");
-        filesCollection.add(R"(../filesList.txt)");
-        filesCollection.remove(R"(C:\Example\Path\To\file.txt)");
-        QList<QString> fileListToTrack = filesCollection.getCollection();
+	QObject::connect(tracker,
+		&FileStatesTracker::fileCreated,
+		&consoleNotifier,
+		&FileStatesConsoleNotifier::fileCreatedNotify);
+	QObject::connect(tracker,
+		&FileStatesTracker::fileModified,
+		&consoleNotifier,
+		&FileStatesConsoleNotifier::fileModifiedNotify);
+	QObject::connect(tracker,
+		&FileStatesTracker::fileDeleted,
+		&consoleNotifier,
+		&FileStatesConsoleNotifier::fileDeletedNotify);
+	QObject::connect(tracker,
+		&FileStatesTracker::fileTracked,
+		&consoleNotifier,
+		&FileStatesConsoleNotifier::fileTrackedNotify);
+	QObject::connect(tracker,
+		&FileStatesTracker::stopTracking,
+		&consoleNotifier,
+		&FileStatesConsoleNotifier::stopTrackingNotify);
+	QObject::connect(tracker,
+		&FileStatesTracker::fileAlreadyTracked,
+		&consoleNotifier,
+		&FileStatesConsoleNotifier::fileAlreadyTrackedNotify);
+	QObject::connect(tracker,
+		&FileStatesTracker::fileNotTracked,
+		&consoleNotifier,
+		&FileStatesConsoleNotifier::fileNotTrackedNotify);
+	QObject::connect(tracker,
+		&FileStatesTracker::fileNotModified,
+		&consoleNotifier,
+		&FileStatesConsoleNotifier::fileNotModifiedNotify);
+	QObject::connect(tracker,
+		&FileStatesTracker::trackingEnded,
+		&consoleNotifier,
+		&FileStatesConsoleNotifier::trackingEndedNotify);
 
-        tracker->trackFromList(fileListToTrack);
-    });
-    timer.start();
+	tracker->addFile(R"(../FilesToTrack/asd.txt)");
+	tracker->addFile(R"(../FilesToTrack/asd2.txt)");
+	tracker->addFile(R"(../FilesToTrack/asd2.txt)");
+	tracker->addFile(R"(../FilesToTrack/asd3.txt)");
+	tracker->deleteFile(R"(../FilesToTrack/asd3.txt)");
+	tracker->deleteFile(R"(../FilesToTrack/notexistsinlist.txt)");
+	cout << "-------------------------------Tracking started--------------------------------" << endl;
 
-    int result = QCoreApplication::exec();
+	QTimer timer;
+	timer.setInterval(5000);
+	QObject::connect(&timer, &QTimer::timeout, tracker, &FileStatesTracker::UpdateFileState);
+	timer.start();
 
-    delete tracker;
-    delete &filesCollection;
+	int result = QCoreApplication::exec();
 
-    return result;
+	delete tracker;
+
+	return result;
 }

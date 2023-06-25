@@ -1,16 +1,25 @@
-#ifndef FILESTATESCONSOLENOTIFIER_H
-#define FILESTATESCONSOLENOTIFIER_H
+#pragma once
 #include <QObject>
+#include <iostream>
 
-class FileStatesConsoleNotifier: public QObject
+using namespace std;
+
+class FileStatesConsoleNotifier : public QObject
 {
-Q_OBJECT
-public slots:
-    static void fileExistsNotify(const QString &path, qint64 size);
-    static void fileModifiedNotify(const QString &path, qint64 size);
-    static void fileNotExistsNotify(const QString &path);
-    static void trackingEndedNotify(qint64 filesAmount);
+ Q_OBJECT
+
+ public:
+	FileStatesConsoleNotifier(QObject* parent = nullptr);
+	~FileStatesConsoleNotifier() = default;
+
+ public slots:
+	void fileTrackedNotify(string filePath, qint64 fileSize, bool isExist);
+	void fileCreatedNotify(string filePath, qint64 fileSize);
+	void fileModifiedNotify(string filePath, qint64 fileSize);
+	void fileDeletedNotify(string filePath);
+	void fileAlreadyTrackedNotify(string filePath);
+	void fileNotTrackedNotify(string filePath);
+	void stopTrackingNotify(string filePath);
+	void fileNotModifiedNotify(string filePath);
+	void trackingEndedNotify(int filesAmount);
 };
-
-
-#endif //FILESTATESCONSOLENOTIFIER_H
